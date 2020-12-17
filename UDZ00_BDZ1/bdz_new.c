@@ -134,23 +134,25 @@ void readMsg(void)
 	unsigned char answData[8],answDataLenght=0,noAnswerFlag=0;
 
 	if(index<0){ERROR=CAN;return;}
-
-	switch(CANRXbuf[index].data[0])	//в дате[0] код команды
+	if(CANRXbuf[index].ID==(unsigned long int)eeprom_read_byte(&netID)||CANRXbuf[index].ID==0)
 	{
-	case PING: answDataLenght=answPing(index,answData);
-	break;
-	case RESET: answDataLenght=answReset(answData);
-	break;
-	case RD_FAULT: answDataLenght=answFault(answData);
-	break;
-	case RD_ARCH_1: answDataLenght=answArch(1,answData,CANRXbuf[index].data[1]);
-	break;
-	case RD_ARCH_2: answDataLenght=answArch(2,answData,CANRXbuf[index].data[1]);
-	break;
-	case PROG: answDataLenght=answProg(index,answData,&noAnswerFlag);
-	break;
-	default:{ERROR=MSG;return;}
-	break;
+		switch(CANRXbuf[index].data[0])	//в дате[0] код команды
+		{
+		case PING: answDataLenght=answPing(index,answData);
+		break;
+		case RESET: answDataLenght=answReset(answData);
+		break;
+		case RD_FAULT: answDataLenght=answFault(answData);
+		break;
+		case RD_ARCH_1: answDataLenght=answArch(1,answData,CANRXbuf[index].data[1]);
+		break;
+		case RD_ARCH_2: answDataLenght=answArch(2,answData,CANRXbuf[index].data[1]);
+		break;
+		case PROG: answDataLenght=answProg(index,answData,&noAnswerFlag);
+		break;
+		default:{ERROR=MSG;return;}
+		break;
+		}
 	}
 
 	if(noAnswerFlag ==0) CAN_loadTXbuf(answID, answDataLenght, answData, CAN_TX_PRIORITY_3 & CAN_SID_FRAME);
