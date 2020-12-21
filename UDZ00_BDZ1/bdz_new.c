@@ -237,7 +237,7 @@ static inline unsigned char answProg(signed char index,unsigned char *data,unsig
 	if((CANRXbuf[index].ID & (unsigned long int)0xFF) ==0) *answFlag=1;	//если запрос был широковещательным отвечать не надо
 
 	data[0]=PROG;
-	if(CANRXbuf[index].dataLength > 1)	//если получен запрос на изменение параметра
+	if(CANRXbuf[index].dataLength > 2)	//если получен запрос на изменение параметра
 	{
 		signed int param=(signed int)CANRXbuf[index].data[2]<<8 | CANRXbuf[index].data[3];	//новое время МТЗ
 		if(param>=0)eeprom_update_word(&time[0],param);										//если оно положительное -записываем новое значение
@@ -249,6 +249,16 @@ static inline unsigned char answProg(signed char index,unsigned char *data,unsig
 		eeprom_update_byte(&dataCRC,CRC());																//обновляем контрольную сумму данных
 		if(CAN_init(CAN_MODE_NORMAL)<1){ERROR=CAN;}	//		asm("jmp 0");	//фильтры CAN настроены на 00 или netID.если не перезапустить прибор,то при замене адреса не обновятся фильтры.итог-потеря связи
 
+	}
+	if (CANRXbuf[index].dataLength==2)
+	{
+		data[1]=eeprom_read_byte(&o[0]);
+		data[2]=eeprom_read_byte(&o[1]);
+		data[3]=eeprom_read_byte(&o[2]);
+		data[4]=eeprom_read_byte(&o[3]);
+		data[5]=eeprom_read_byte(&o[4]);
+		data[6]=eeprom_read_byte(&o[5]);
+		data[7]=eeprom_read_byte(&o[6]);
 	}
 	data[1]=eeprom_read_byte(&netID);
 	data[2]=MTZ_TIME >> 8;
